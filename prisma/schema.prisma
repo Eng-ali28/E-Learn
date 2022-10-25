@@ -1,0 +1,93 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id      String   @id @default(uuid())
+  data    Profile?
+  role    Roles    @default(Student)
+  results Result[] 
+  lesson  Lesson[]
+}
+
+model Profile {
+  id        String   @id @default(uuid())
+  userId    String   @unique
+  user      User     @relation(fields: [userId], references: [id])
+  firstname String
+  lastname  String
+  phone     String
+  birthdate DateTime
+  Address   String
+  image     String
+}
+
+model Result {
+  id         String   @id @default(uuid())
+  userId     String?
+  student    User?    @relation(fields: [userId], references: [id])
+  lesson     Lesson   @relation(fields: [lessonId], references: [id])
+  lessonId   String   @unique
+  Score      Float    @default(0.0)
+  TotalItem  Int?
+  dateRecord DateTime @default(now())
+}
+
+model Lesson {
+  id         String         @id @default(uuid())
+  result     Result?
+  student    User[]
+  quiz       Quiz?
+  videoFile  LessonVideo[]
+  pdfFile    LessonPdf[]
+  name       String
+  content    String
+  category   LessonCategory @relation(fields: [categoryId], references: [id])
+  categoryId String         @unique
+}
+
+model LessonCategory {
+  id          String  @id @default(uuid())
+  lesson      Lesson?
+  name        String
+  description String?
+}
+
+model Quiz {
+  id         String @id @default(uuid())
+  lesson     Lesson @relation(fields: [lessonId], references: [id])
+  lessonId   String @unique
+  question   String
+  firstAns   String
+  secondAns  String
+  thirdAns   String
+  fourthAns  String
+  correctAns String
+}
+
+model LessonVideo {
+  id        String @id @default(uuid())
+  lesson    Lesson @relation(fields: [lessonId], references: [id])
+  lessonId  String
+  videoFile String
+}
+
+model LessonPdf {
+  id       String @id @default(uuid())
+  lesson   Lesson @relation(fields: [lessonId], references: [id])
+  lessonId String
+  pdfFile  String
+}
+
+enum Roles {
+  Student
+  Teacher
+}
